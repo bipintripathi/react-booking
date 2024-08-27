@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/bipintripathi/react-booking/static/css/main.5d3eaef1.css",
+    "main.js": "/bipintripathi/react-booking/static/js/main.64a395f0.js",
+    "index.html": "/bipintripathi/react-booking/index.html",
+    "main.5d3eaef1.css.map": "/bipintripathi/react-booking/static/css/main.5d3eaef1.css.map",
+    "main.64a395f0.js.map": "/bipintripathi/react-booking/static/js/main.64a395f0.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5d3eaef1.css",
+    "static/js/main.64a395f0.js"
+  ]
+}
