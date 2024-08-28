@@ -14726,3 +14726,7 @@ to {
   display: none;
   white-space: nowrap;
 }
+
+.disabled-text > p.time-selector_time-selector__label-text__PzHLN{
+  color: lightgrey !important;
+}

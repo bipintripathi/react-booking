@@ -1,12 +1,12 @@
 import React, {useState, useEffect} from 'react'
 
 const sizes = [
-    { id: 82, label: '4x6', price: 600 },
-    { id: 168, label: '5x7', price: 800 },
-    { id: 169, label: '6x8', price: 900 },
-    { id: 170, label: '7x9', price: 1000 },
-    { id: 171, label: '8x10', price: 1100 },
-    { id: 172, label: '8x10 Style-2', price: 1200 },
+    { id: 82, label: 'Standing TV Unit 4x6', price: 600 },
+    { id: 168, label: 'Standing TV Unit 5x7', price: 800 },
+    { id: 169, label: 'Standing TV Unit 6x8', price: 900 },
+    { id: 170, label: 'Standing TV Unit 7x9', price: 1000 },
+    { id: 171, label: 'Standing TV Unit 8x10', price: 1100 },
+    { id: 172, label: 'Standing TV Unit 9x10', price: 1200 },
 ];
 
 const times = [
@@ -21,8 +21,40 @@ const times = [
     { id: 9, label: '5:00 PM - 6:00 PM' , value:"5:00 PM - 6:00 PM"},
     { id: 10, label: '6:00 PM - 7:00 PM', value:"6:00 PM - 7:00 PM" },
     { id: 11, label: '7:00 PM - 8:00 PM', value:"7:00 PM - 8:00 PM" },
-    { id: 12, label: '8:00 PM - 9:00 PM', value:"8:00 PM - 9:00 PM" }   
+    { id: 12, label: '8:00 PM - 9:00 PM', value:"8:00 PM - 9:00 PM" }  
 ];
+
+const isPastTimeSlot = (timeSlot, selectedDate) => {
+    // Helper function to convert 12-hour time format to 24-hour time format
+    const parseTime = (timeStr) => {
+      const [time, modifier] = timeStr.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+  
+      if (modifier === 'PM' && hours !== 12) {
+        hours += 12;
+      } else if (modifier === 'AM' && hours === 12) {
+        hours = 0;
+      }
+  
+      return { hours, minutes };
+    };
+  
+    // Current time
+    const currentTime = new Date();
+  
+    // Parse the time slots
+    const [startTimeStr] = timeSlot.split(' - ');
+    const { hours: startHours, minutes: startMinutes } = parseTime(startTimeStr);
+  
+    // Create a Date object for the start of the time slot
+    const selectedDateTime = new Date(selectedDate);
+    selectedDateTime.setHours(startHours);
+    selectedDateTime.setMinutes(startMinutes);
+    selectedDateTime.setSeconds(0);
+  
+    // Check if the time slot is in the past
+    return selectedDateTime < currentTime;
+  };
 
 const humanDate = (date) => {
     const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -65,6 +97,10 @@ const humanDate = (date) => {
 const getNext30Days = () => {
     const dates = [];
     const today = new Date();
+    const currentHour = today.getHours();
+
+    // Determine if current time is past 8:00 PM
+    const isPast8PM = currentHour >= 20;
 
     for (let i = 0; i < 30; i++) {
         const nextDate = new Date(today);
@@ -75,13 +111,23 @@ const getNext30Days = () => {
             date: nextDate.getDate(),
             fullDate: dateString
         });
+    }   
+
+    // Update the day labels for the remaining dates
+    if (dates.length > 0) {
+        dates[0].day = 'Today';
+    }
+    if (dates.length > 1) {
+        dates[1].day = 'Tomorrow';
     }
 
-    dates[0].day = 'Today';
-    dates[1].day = 'Tomorrow';
+    if (isPast8PM) {
+        dates.shift(); // Remove the first element if past 8:00 PM
+    }
 
     return dates;
 };
+
 
 const Banner = ({ price}) => {
     const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -287,13 +333,17 @@ const DateSelector = ({selectedTime, setSelectedTime, selectedDate, setSelectedD
 
                                             { times.map((time, index) => (
                                                 <div class="time-selector_time-selector__input-container__25smK">
-                                                <input type="radio" id={`select_time__${time.id}`} class="time-selector_time-selector__input__yONhi" name="select_time" 
-                                                value={time.value}
-                                                checked={time.value === selectedTime}
-                                                onChange={() => setSelectedTime(time.value)}
-                                                />
+                                                    <input type="radio" id={`select_time__${time.id}`} class="time-selector_time-selector__input__yONhi" name="select_time" 
+                                                        value={time.value}
+                                                        checked={time.value === selectedTime}
+                                                        onChange={() => setSelectedTime(time.value)}
+                                                        disabled={isPastTimeSlot(time.value, selectedDate)}
+                                                    />
                                                 
-                                                <label class="time-selector_time-selector__label__Lu94W" for={`select_time__${time.id}`}>
+                                                <label className={`time-selector_time-selector__label__Lu94W ${isPastTimeSlot(time.value, selectedDate) ? 'disabled-text' : ''}`}
+                                                
+                                                
+                                                for={`select_time__${time.id}`}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 131 36" class="time-selector_time-selector__background-icon__c_n0N">
                                                     <path fill="#FFF" d="m-46.352-41.762 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm29 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm29-1 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414L7.337-39.348l4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413L-7.265 57.491l-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413L22.735 57.491l-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413L52.735 57.491l-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413L82.735 57.491l-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm30 0 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm-470-5 6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.311-3.414zm-15.595-12.19 6.828 8.624-4.312 3.414L-192.86 40.3l-4.312 3.414L-204 35.09l4.312-3.414L-88.259-56.54l4.312-3.413zM-80.852-84l6.828 8.625-4.312 3.413-111.429 88.215-4.312 3.414-6.828-8.625 4.312-3.414 111.43-88.214 4.31-3.414z" opacity="0.2"></path>
                                                 </svg>
@@ -313,6 +363,10 @@ const DateSelector = ({selectedTime, setSelectedTime, selectedDate, setSelectedD
 }
 
 const PaymentCard = ({selectedPrice, selectedDate, selectedTime}) => {
+
+    const selectedSize = sizes.find(size => size.price === selectedPrice);
+    const label = selectedSize ? selectedSize.label : 'Unknown Size';
+
     return (
       <div>
         <div className="fresnel-container fresnel-at-xs fresnel-:r0:" />
@@ -343,7 +397,7 @@ const PaymentCard = ({selectedPrice, selectedDate, selectedTime}) => {
           <div className="home-cleaning-summary_home-cleaning-summary__info-wrapper__15y9O">
             <div className="home-cleaning-summary_home-cleaning-summary__info-container__o3UGJ">
               <p className="home-cleaning-summary_home-cleaning-summary__info-container-heading__q0vXA">Product</p>
-              <p className="home-cleaning-summary_home-cleaning-summary__info-container-value__W4pLf">Standing TV Unit</p>
+              <p className="home-cleaning-summary_home-cleaning-summary__info-container-value__W4pLf">{label}</p>
             </div>
             <div className="home-cleaning-summary_home-cleaning-summary__info-container__o3UGJ">
               <p className="home-cleaning-summary_home-cleaning-summary__info-container-heading__q0vXA">Date</p>
@@ -391,11 +445,16 @@ const PaymentCard = ({selectedPrice, selectedDate, selectedTime}) => {
 
 
 const Widget = () => {
-
-    let [selectedSize, setSelectedSize] = useState(null);
+    
     let [selectedDate, setSelectedDate] = useState(getNext30Days()[0].fullDate);
-    let [selectedTime, setSelectedTime] = useState(times[0].value);
+    let [selectedTime, setSelectedTime] = useState();
     let [selectedPrice, setSelectedPrice] = useState(sizes[0].price);
+
+    // if selectedDate changed then reset selectedTime
+
+    useEffect(() => {
+        setSelectedTime(null);
+    }, [selectedDate]);
 
   return (
     <form class="Service_main__fdTFb SingleService_main__J1fRP">
